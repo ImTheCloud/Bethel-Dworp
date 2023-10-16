@@ -87,6 +87,11 @@ const Home = ({ navigation }) => {
     };
 
     const handleSubmit = async () => {
+        if (!titleValue || !lyricsValue) {
+            Alert.alert('Eroare', 'Vă rugăm să completați toate câmpurile înainte de a adăuga o nouă cântare.');
+            return;
+        }
+
         try {
             await firestore.collection('song').add({
                 title: titleValue,
@@ -99,15 +104,17 @@ const Home = ({ navigation }) => {
 
             toggleModal(null);
         } catch (error) {
-            console.error('Erreur lors de l\'ajout de la chanson à Firestore:', error);
+            console.error('Eroare la adăugarea melodiei în Firestore:', error);
         }
     };
+
+
 
 
     const handleDelete = () => {
         Alert.alert(
             'Confirmare',
-            `Doriți să ștergeți cântecul "${selectedSong.title}" ?`,
+            `Doriți să ștergeți cântarea "${selectedSong.title}" ?`,
             [
                 {
                     text: 'Anulează',
@@ -249,7 +256,6 @@ const Home = ({ navigation }) => {
                                 containerStyle={styles.buttonContainer}
                                 buttonStyle={styles.addButton}
                                 titleStyle={styles.buttonTitle}
-
                             />
                         </>
                     )}
