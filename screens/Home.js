@@ -13,7 +13,7 @@ const Home = ({ navigation }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        const unsubscribe = firestore.collection('chansons').onSnapshot((snapshot) => {
+        const unsubscribe = firestore.collection('song').onSnapshot((snapshot) => {
             const songsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
             setSongs(songsData);
         });
@@ -34,20 +34,6 @@ const Home = ({ navigation }) => {
         setLyricsValue(text);
     };
 
-    const handleSubmit = async () => {
-        try {
-            await firestore.collection('chansons').add({
-                titre: titleValue,
-                paroles: lyricsValue,
-            });
-
-            console.log('Chanson ajoutée avec succès à Firestore!');
-            toggleModal(null);
-        } catch (error) {
-            console.error('Erreur lors de l\'ajout de la chanson à Firestore:', error);
-        }
-    };
-
     const handleSearchChange = (text) => {
         setSearchTerm(text);
     };
@@ -56,15 +42,31 @@ const Home = ({ navigation }) => {
         setSearchTerm('');
     };
 
+    const handleSubmit = async () => {
+        try {
+            await firestore.collection('song').add({
+                title: titleValue,
+                lyrics: lyricsValue,
+            });
+
+            // Réinitialiser les valeurs des champs
+            setTitleValue('');
+            setLyricsValue('');
+
+            toggleModal(null);
+        } catch (error) {
+            console.error('Erreur lors de l\'ajout de la chanson à Firestore:', error);
+        }
+    };
+
     return (
-        <ImageBackground source={require('../assets/bethelBackground.png')} style={styles.backgroundImage}>
 
         <View style={styles.container}>
             <View style={styles.searchInputContainer}>
                 <Feather name="search" size={20} color="#3498db" style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Rechercher une chanson par titre"
+                    placeholder="Search for a song by title"
                     onChangeText={handleSearchChange}
                     value={searchTerm}
                 />
@@ -77,20 +79,21 @@ const Home = ({ navigation }) => {
 
             <ScrollView style={styles.scrollView}>
                 {songs
-                    .filter((song) => song.titre.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .filter((song) => song && song.title && song.title.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .sort((a, b) => a.title.localeCompare(b.title))
                     .map((song) => (
                         <TouchableOpacity
-                            key={song.id}
+                            key={song.id}  // Ajoutez une clé unique ici
                             onPress={() => toggleModal(song)}
                             style={styles.songButton}
                         >
-                            <Text style={styles.songButtonText}>{song.titre}</Text>
+                            <Text style={styles.songButtonText}>{song.title}</Text>
                         </TouchableOpacity>
                     ))}
             </ScrollView>
 
             <Button
-                title="Ajouter une chanson"
+                title="Add a song"
                 onPress={() => toggleModal(null)}
                 containerStyle={styles.addButtonContainer}
                 buttonStyle={styles.addButton}
@@ -104,26 +107,30 @@ const Home = ({ navigation }) => {
                 <View style={styles.modalContainer}>
                     {selectedSong ? (
                         <>
-                            <Text style={styles.modalTitle}>{selectedSong.titre}</Text>
-                            <Text style={styles.lyricsText}>{selectedSong.paroles}</Text>
+                            <ScrollView >
+                                <Text style={styles.modalTitle}>{selectedSong.title}</Text>
+                                <Text style={styles.lyricsText}>{selectedSong.lyrics}</Text>
+                            </ScrollView>
                         </>
                     ) : (
                         <>
-                            <Text style={styles.modalTitle}>Ajouter une chanson</Text>
+                            <Text style={styles.modalTitle}>Add a song</Text>
                             <Input
-                                placeholder="Titre"
+                                placeholder="Title"
                                 onChangeText={handleTitleChange}
                                 value={titleValue}
                             />
-                            <Input
-                                placeholder="Paroles"
-                                onChangeText={handleLyricsChange}
-                                value={lyricsValue}
-                                multiline={true}
-                                inputStyle={styles.lyricsInput}
-                            />
+                            <ScrollView style={styles.lyricsScrollView}>
+                                <TextInput
+                                    placeholder="Lyrics"
+                                    onChangeText={handleLyricsChange}
+                                    value={lyricsValue}
+                                    multiline={true}
+                                    style={styles.lyricsInput}
+                                />
+                            </ScrollView>
                             <Button
-                                title="Ajouter"
+                                title="Add"
                                 onPress={handleSubmit}
                                 containerStyle={styles.buttonContainer}
                                 buttonStyle={styles.addButton}
@@ -131,8 +138,10 @@ const Home = ({ navigation }) => {
                         </>
                     )}
 
+
+
                     <Button
-                        title="Fermer"
+                        title="Close"
                         onPress={() => toggleModal(null)}
                         containerStyle={styles.buttonContainer}
                         buttonStyle={styles.closeButton}
@@ -140,18 +149,20 @@ const Home = ({ navigation }) => {
                 </View>
             </Modal>
         </View>
-        </ImageBackground>
 
     );
 };
 
 const styles = StyleSheet.create({
+    infoButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+    },
     backgroundImage: {
         flex: 1,
         resizeMode: 'cover',
         justifyContent: 'center',
-        width: '100%', // Assurez-vous que l'image couvre toute la largeur de l'écran
-        height: '100%', // Assurez-vous que l'image couvre toute la hauteur de l'écran
     },
 
     container: {
@@ -161,8 +172,7 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
     },
     searchInputContainer: {
-        marginTop:50,
-
+        marginTop: 50,
         flexDirection: 'row',
         alignItems: 'center',
         height: 50,
@@ -197,18 +207,18 @@ const styles = StyleSheet.create({
     songButton: {
         padding: 10,
         marginVertical: 5,
-        backgroundColor: 'rgba(52,152,219,0.44)',
+        backgroundColor: 'rgba(52,152,219,0.28)',
         borderRadius: 5,
     },
     songButtonText: {
-        color: '#ecf0f1',
+        color: '#000000',
     },
     addButtonContainer: {
         width: '80%',
         marginBottom: 0,
     },
     addButton: {
-        backgroundColor: '#27ae60',
+        backgroundColor: 'rgba(39,82,174,0.81)',
     },
     modalContainer: {
         flex: 1,
@@ -218,16 +228,23 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     modalTitle: {
-        fontSize: 18,
-        marginBottom: 10,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        fontSize: 28,
+        marginBottom: 30,
         color: '#2c3e50',
+    },
+    lyricsScrollView: {
+        textAlign: 'center',
+
     },
     lyricsText: {
-        textAlign: 'center',
         color: '#2c3e50',
+        fontSize: 16,
     },
     lyricsInput: {
-        height: 100,
+        height: 400,
+        width:300,
         borderColor: '#3498db',
         borderWidth: 1,
         borderRadius: 5,
@@ -239,11 +256,13 @@ const styles = StyleSheet.create({
         width: '80%',
     },
     closeButton: {
-        backgroundColor: '#e74c3c',
+        backgroundColor: 'rgba(231,76,60,0.72)',
     },
     clearButton: {
         marginLeft: 10,
     },
+
+
 });
 
 export default Home;
