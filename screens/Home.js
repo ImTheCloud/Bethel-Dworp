@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
         width:280,
         borderWidth: 1,
         borderRadius: 5,
-        
+
     },
     buttonContainer: {
         marginVertical: 10,
