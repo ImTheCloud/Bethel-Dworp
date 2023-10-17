@@ -13,6 +13,24 @@ import {
 import { Button, Input } from 'react-native-elements';
 import { firestore } from '../Firebase';
 import {AntDesign, Entypo, Feather, FontAwesome} from '@expo/vector-icons';
+import { Linking } from 'react-native';
+
+const openYoutubeLink = (youtubeLink) => {
+    Linking.canOpenURL(youtubeLink)
+        .then((supported) => {
+            if (supported) {
+                Linking.openURL(youtubeLink).catch((err) =>
+                    console.error('Eroare la deschiderea link-ului YouTube:', err)
+                );
+            } else {
+                // Le lien YouTube n'est pas pris en charge
+                Alert.alert('Eroare', 'Acest link YouTube nu există.');
+            }
+        })
+        .catch((err) =>
+            console.error('Eroare la verificarea dacă URL-ul este suportat:', err)
+        );
+};
 
 const Home = ({ navigation }) => {
     const [isModalVisible, setModalVisible] = useState(false);
@@ -20,6 +38,7 @@ const Home = ({ navigation }) => {
     const [songs, setSongs] = useState([]);
     const [titleValue, setTitleValue] = useState('');
     const [lyricsValue, setLyricsValue] = useState('');
+    const [youtubeLinkValue, setYoutubeLinkValue] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isEditModalVisible, setEditModalVisible] = useState(false);
 
@@ -49,10 +68,13 @@ const Home = ({ navigation }) => {
         if (song) {
             setTitleValue(song.title);
             setLyricsValue(song.lyrics);
+
         } else {
             // Réinitialiser les valeurs si aucune chanson n'est sélectionnée
             setTitleValue('');
             setLyricsValue('');
+            setYoutubeLinkValue('');
+
         }
     };
 
@@ -62,6 +84,7 @@ const Home = ({ navigation }) => {
             await firestore.collection('song').doc(selectedSong.id).update({
                 title: titleValue,
                 lyrics: lyricsValue,
+                youtubeLink: youtubeLinkValue,
             });
 
             toggleEditModal();
@@ -78,6 +101,10 @@ const Home = ({ navigation }) => {
         setLyricsValue(text);
     };
 
+    const handleYoutubeLinkChange = (text) => {
+        setYoutubeLinkValue(text);
+    };
+
     const handleSearchChange = (text) => {
         setSearchTerm(text);
     };
@@ -87,7 +114,7 @@ const Home = ({ navigation }) => {
     };
 
     const handleSubmit = async () => {
-        if (!titleValue || !lyricsValue) {
+        if (!titleValue || !lyricsValue ||  !youtubeLinkValue) {
             Alert.alert('Eroare', 'Vă rugăm să completați toate câmpurile înainte de a adăuga o nouă cântare.');
             return;
         }
@@ -96,11 +123,13 @@ const Home = ({ navigation }) => {
             await firestore.collection('song').add({
                 title: titleValue,
                 lyrics: lyricsValue,
+                youtubeLink: youtubeLinkValue,
             });
 
             // Réinitialiser les valeurs des champs
             setTitleValue('');
             setLyricsValue('');
+            setYoutubeLinkValue('');
 
             toggleModal(null);
         } catch (error) {
@@ -161,13 +190,14 @@ const Home = ({ navigation }) => {
                     .sort((a, b) => a.title.localeCompare(b.title))
                     .map((song, index) => (
                         <TouchableOpacity
-                            key={song.id}  // Ajoutez une clé unique ici
+                            key={song.id}
                             onPress={() => toggleModal(song)}
                             style={styles.songButton}
                         >
                             <Text style={styles.songButtonText}>{`${index + 1}. ${song.title}`}</Text>
                         </TouchableOpacity>
                     ))}
+
             </ScrollView>
 
 
@@ -199,13 +229,22 @@ const Home = ({ navigation }) => {
                                         value={titleValue}
                                         style={styles.modalTitle}
                                     />
-                                    <TextInput
+
+                                        <TextInput
                                         onChangeText={handleLyricsChange}
                                         value={lyricsValue}
                                         multiline={true}
                                         numberOfLines={25}
                                         style={styles.lyricsText}
                                     />
+
+                                        <TextInput
+                                            onChangeText={handleYoutubeLinkChange}
+                                            value={youtubeLinkValue}
+                                            placeholder="YouTube Link"
+                                            style={styles.modalTitle}
+                                        />
+
                                     </ScrollView>
                                     <Button
                                         title="Salvează"
@@ -227,6 +266,13 @@ const Home = ({ navigation }) => {
                                 <ScrollView style={styles.scrollView}>
                                     <Text style={styles.modalTitle}>{selectedSong.title}</Text>
                                     <Text style={styles.lyricsText}>{selectedSong.lyrics}</Text>
+
+                                    {selectedSong.youtubeLink && (
+                                        <TouchableOpacity onPress={() => openYoutubeLink(selectedSong.youtubeLink)}>
+                                            <Text style={styles.youtubeLink}>{selectedSong.youtubeLink}</Text>
+                                        </TouchableOpacity>
+                                    )}
+
                                 </ScrollView>
                             )}
                         </>
@@ -237,6 +283,13 @@ const Home = ({ navigation }) => {
                             <TextInput
                                 onChangeText={handleTitleChange}
                                 value={titleValue}
+                                placeholder="Titlu"
+                                style={styles.titleInput}
+                            />
+                            <TextInput
+                                onChangeText={(text) => setYoutubeLinkValue(text)}
+                                value={youtubeLinkValue}
+                                placeholder="YouTube Link"
                                 style={styles.titleInput}
                             />
                             <ScrollView >
@@ -275,6 +328,11 @@ const Home = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+    youtubeLink: {
+        color: 'blue', // ou toute autre couleur que vous préférez
+        textDecorationLine: 'underline',
+    },
+
     deleteButton: {
         marginTop: 10,
         backgroundColor: 'rgba(180,2,2,0.77)',  // Couleur du bouton de suppression
