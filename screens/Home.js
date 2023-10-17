@@ -86,6 +86,12 @@ const Home = ({ navigation }) => {
                 lyrics: lyricsValue,
                 youtubeLink: youtubeLinkValue,
             });
+            setSelectedSong({
+                ...selectedSong,
+                title: titleValue,
+                lyrics: lyricsValue,
+                youtubeLink: youtubeLinkValue,
+            });
 
             toggleEditModal();
         } catch (error) {
@@ -295,6 +301,7 @@ const Home = ({ navigation }) => {
                             <ScrollView >
                                 <TextInput
                                     onChangeText={handleLyricsChange}
+                                    placeholder="  Versuri"
                                     value={lyricsValue}
                                     multiline={true}
                                     numberOfLines={25}
@@ -329,8 +336,11 @@ const Home = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     youtubeLink: {
-        color: 'blue', // ou toute autre couleur que vous préférez
-        textDecorationLine: 'underline',
+        marginTop: 1000,
+        color: 'rgba(20,50,175,0.83)',  // Couleur du bouton de suppression
+        fontSize: 12,
+
+
     },
 
     deleteButton: {
@@ -430,20 +440,20 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontWeight: 'bold',
         textAlign: 'center',
-        fontSize: 25,
+        fontSize: 30,
         marginBottom: 30,
         marginTop: 20,
-
         color: '#2c3e50',
     },
 
     lyricsText: {
         color: '#000',
         fontSize: 16,
+        fontWeight:'bold'
+
     },
     titleInput: {
         width:280,
-
         borderWidth: 1,
         borderRadius: 5,
         marginBottom: 10,
@@ -454,6 +464,7 @@ const styles = StyleSheet.create({
         width:280,
         borderWidth: 1,
         borderRadius: 5,
+        
     },
     buttonContainer: {
         marginVertical: 10,
