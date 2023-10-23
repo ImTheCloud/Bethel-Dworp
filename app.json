@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/startApp.png",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#f5ebd8"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -19,11 +19,17 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/startApp.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#f5ebd8"
+      },
+      "package": "com.claudiucode.BethelDworp"
     },
     "web": {
       "favicon": "./assets/startApp.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f7dc009c-92e6-41ae-9f28-5c18dc6c800d"
+      }
     }
   }
 }

@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingVertical: 20,
-        backgroundColor: 'rgba(246,244,238,255)', // Définissez la couleur de fond
+        backgroundColor: 'rgba(246,244,238,255)',
 
     },
     searchInputContainer: {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
         color: '#2c3e50',
     },
     buttonTitle: {
-        color: '#000000',  // Définissez la couleur du texte à noir
+        color: '#000000',
     },
 
     scrollView: {
